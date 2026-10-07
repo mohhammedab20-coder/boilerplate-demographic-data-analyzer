@@ -2,48 +2,50 @@ import pandas as pd
 
 
 def calculate_demographic_data(print_data=True):
-    # Read data from file
-    df = None
+    # 1. قراءة البيانات من ملف CSV
+    df = pd.read_csv('adult.data.csv')
 
-    # How many of each race are represented in this dataset? This should be a Pandas series with race names as the index labels.
-    race_count = None
+    # 2. كم عدد الأشخاص من كل عرْق (race)؟
+    race_count = df['race'].value_counts()
 
-    # What is the average age of men?
-    average_age_men = None
+    # 3. متوسط عمر الرجال
+    average_age_men = round(df[df['sex'] == 'Male']['age'].mean(), 1)
 
-    # What is the percentage of people who have a Bachelor's degree?
-    percentage_bachelors = None
+    # 4. نسبة الأشخاص الحاصلين على شهادة البكالوريوس (Bachelors)
+    percentage_bachelors = round((df['education'] == 'Bachelors').mean() * 100, 1)
 
-    # What percentage of people with advanced education (`Bachelors`, `Masters`, or `Doctorate`) make more than 50K?
-    # What percentage of people without advanced education make more than 50K?
+    # 5. تحديد أصحاب التعليم العالي وغير العالي
+    higher_education = df['education'].isin(['Bachelors', 'Masters', 'Doctorate'])
+    lower_education = ~higher_education
 
-    # with and without `Bachelors`, `Masters`, or `Doctorate`
-    higher_education = None
-    lower_education = None
+    # نسبة من يتقاضون أكثر من 50K بين أصحاب التعليم العالي
+    higher_education_rich = round((df[higher_education]['salary'] == '>50K').mean() * 100, 1)
 
-    # percentage with salary >50K
-    higher_education_rich = None
-    lower_education_rich = None
+    # نسبة من يتقاضون أكثر من 50K بين من ليس لديهم تعليم عالٍ
+    lower_education_rich = round((df[lower_education]['salary'] == '>50K').mean() * 100, 1)
 
-    # What is the minimum number of hours a person works per week (hours-per-week feature)?
-    min_work_hours = None
+    # 6. الحد الأدنى لساعات العمل في الأسبوع
+    min_work_hours = df['hours-per-week'].min()
 
-    # What percentage of the people who work the minimum number of hours per week have a salary of >50K?
-    num_min_workers = None
+    # 7. نسبة من يتقاضون أكثر من 50K من الذين يعملون الحد الأدنى من الساعات
+    num_min_workers = df[df['hours-per-week'] == min_work_hours]
+    rich_percentage = round((num_min_workers['salary'] == '>50K').mean() * 100, 1)
 
-    rich_percentage = None
+    # 8. الدولة التي لديها أعلى نسبة من الأشخاص الذين يتقاضون >50K ونسبتهم
+    country_counts = df['native-country'].value_counts()
+    country_rich_counts = df[df['salary'] == '>50K']['native-country'].value_counts()
+    country_rich_percentage = (country_rich_counts / country_counts) * 100
 
-    # What country has the highest percentage of people that earn >50K?
-    highest_earning_country = None
-    highest_earning_country_percentage = None
+    highest_earning_country = country_rich_percentage.idxmax()
+    highest_earning_country_percentage = round(country_rich_percentage.max(), 1)
 
-    # Identify the most popular occupation for those who earn >50K in India.
-    top_IN_occupation = None
+    # 9. المهنة الأكثر شعبية للذين يتقاضون >50K في الهند (India)
+    top_IN_occupation = df[(df['native-country'] == 'India') & (df['salary'] == '>50K')]['occupation'].value_counts().idxmax()
 
     # DO NOT MODIFY BELOW THIS LINE
 
     if print_data:
-        print("Number of each race:\n", race_count) 
+        print("Number of each race:\n", race_count)
         print("Average age of men:", average_age_men)
         print(f"Percentage with Bachelors degrees: {percentage_bachelors}%")
         print(f"Percentage with higher education that earn >50K: {higher_education_rich}%")
@@ -63,7 +65,7 @@ def calculate_demographic_data(print_data=True):
         'min_work_hours': min_work_hours,
         'rich_percentage': rich_percentage,
         'highest_earning_country': highest_earning_country,
-        'highest_earning_country_percentage':
-        highest_earning_country_percentage,
+        'highest_earning_country_percentage': highest_earning_country_percentage,
         'top_IN_occupation': top_IN_occupation
     }
+    
